@@ -4,49 +4,60 @@ import aiohttp
 import aiofiles
 from aiohttp import web
 import json
-import os
 
 routes = web.RouteTableDef()
 
 @routes.get("/getData")
 async def get_data_db(request):
     try:
-        async with aiofiles.open("MiniProjekt1/FakeDataset.json", mode='r') as file_data:
-            
+        async with aiosqlite.connect("MiniProjekt1/projekt.db") as database:
+            cursor = await database.cursor()
 
-            # TODO change 10 to 10_000
-            read_data = {await file_data.readline() for _ in range(10)}
+            await cursor.execute("SELECT * FROM Projekt1")
 
-            whole_data = [json.loads(line) for line in read_data]
+            results = await cursor.fetchall()
 
-            data_to_db = []
-            for item in whole_data:
-                db_item = {}
-                db_item["username"] = item["repo_name"] # TODO slice str to keep just the username 
-                db_item["ghlink"] = "https://github.com/" + item["repo_name"]
-                db_item["filename"] = item["path"] # TODO slice str to keep just the file name 
-                data_to_db.append(db_item)
+            # IF empty need to fill with first 10_000 lines from FakeDataset.json
+            if results == []:
+                async with aiofiles.open("MiniProjekt1/FakeDataset.json", mode='r') as file_data:
+                    raw_data = {await file_data.readline() for _ in range(20)}
 
-        return web.json_response(data_to_db, status = 200)
+                    json_data = [json.loads(line) for line in raw_data]
+
+                    db_data = [
+                        {
+                            "username": item["repo_name"].rsplit("/", 1)[0],
+                            "ghlink": "https://github.com/" + item["repo_name"],
+                            "filename": item["path"].rsplit("/", 1)[1]
+                        }
+                        for item in json_data
+                    ]
+
+                    await populate_db(db_data)
+
+            # ELSE grab max 100 lines of data from DB      
+            else: 
+                print(results)
+
+        return web.json_response("ok", status = 200)
 
     except Exception as e:
         return web.json_response({ "Error": str(e) }, status = 500)
 
 
-# async def populate_db():
-#     db = await aiosqlite.connect("MiniProjekt1/projekt.db")
-#     cursor = await db.execute(
-#         "CREATE TABLE fakeDataset (id INTEGER PRIMARY KEY AUTOINCREMENT, usename STRING, ghlink STRING, filename STRING"
-#     )
-#     with open ("FakeDataset.json") as dataset:
-#         data = dataset.readlines()
-    
-#     data = {dict(line.strip().split("m")) for line in data}
+async def populate_db(data_list):
+    async with aiosqlite.connect("MiniProjekt1/projekt.db") as db:
+        cursor = await db.cursor()
 
-#     await cursor.executemany("INSERT into fakeDataset VALUES (?, ?, ?, ?)", data)
-#     await db.commit()
-#     await cursor.close()
-#     await db.close
+        keys = ", ".join([key for key in data_list[0].keys() if key != "id"])
+        placeholders = ", ".join("?" for _ in data_list[0].values())
+        sql_insert = f"INSERT INTO Projekt1 ({keys}) VALUES ({placeholders})"
+
+        values = [[v for k, v in item.items() if k != "id"] for item in data_list]
+        await cursor.executemany(sql_insert, values)
+
+        await db.commit()
+
 
 app = web.Application()
 
