@@ -1,3 +1,12 @@
+"""
+0. Fake E-ucenje API microservis (M0). Sastoji se od DB i jedne rute koja
+vraca github linkove na zadace. Prilikom pokretanja servisa, provjerava
+se postoje li podaci u DB. Ukoliko ne postoje, pokrece se funkcija koja
+popunjava DB s testnim podacima (10000). Kad microservis zaprimi
+zahtjev za dohvacanje linkova, uzima maksimalno 100 redataka podataka
+iz DB-a.
+"""
+
 import json
 import aiohttp
 import asyncio
@@ -14,6 +23,7 @@ def parse_data(obj):
         obj["repo_name"].split("/")[0],
         "https://github.com/" + obj["repo_name"],
         obj["path"].split("/")[-1],
+        obj["content"]
     )
     return item
 
@@ -23,7 +33,7 @@ async def insert_into_db():
         async for line in file:
             async with aiosqlite.connect(DATABASE) as database:
                 await database.execute(
-                    "INSERT INTO eucenje (username, ghlink, filename) VALUES (?, ?, ?)",
+                    "INSERT INTO eucenje (username, ghlink, filename, content) VALUES (?, ?, ?, ?)",
                     parse_data(json.loads(line))
                 )
                 await database.commit()
@@ -37,23 +47,47 @@ async def check_db():
         cursor = await database.cursor()
         await cursor.execute("SELECT COUNT(*) FROM eucenje")
         count = await cursor.fetchall()
-
+        
         if count[0][0] == 0:
             await insert_into_db()
 
-
-@routes.get("/getData")
+@routes.get("/getDataDb")
 async def get_data_db(request):
-    try:
-        await check_db()
-        return web.json_response({ "Status": "ok" }, status = 200)
+    try:   
+        response = {
+            "service_id": 0,
+            "data": {
+                "usernames": [],
+                "githubLinks": [],
+                "filenames": [],
+                "content": []
+            }
+        }
+    
+        limit = 100
+        offset = request.query["offset"]
+        
+        for i in range(0, 10000, 100):
+            async with aiosqlite.connect(DATABASE) as database:
+                async with database.execute(f"Select * FROM eucenje LIMIT {limit} OFFSET {i}") as cursor:
+                    async for row in cursor:
+                        response["data"]["usernames"].append(row[1])
+                        response["data"]["githubLinks"].append(row[2])
+                        response["data"]["filenames"].append(row[3])
+                        response["data"]["content"].append(row[4])
+
+                        await database.commit()
+
+        return web.json_response(response , status = 200)
     
     except Exception as e:
         return web.json_response({ "Error": str(e) })
+
+asyncio.run(check_db())
 
 
 app = web.Application()
 
 app.router.add_routes(routes)
 
-web.run_app(app)
+web.run_app(app, port = 1)
