@@ -67,9 +67,8 @@ async def get_data_db(request):
         limit = 100
         offset = request.query["offset"]
         
-        for i in range(0, 10000, 100):
-            async with aiosqlite.connect(DATABASE) as database:
-                async with database.execute(f"Select * FROM eucenje LIMIT {limit} OFFSET {i}") as cursor:
+        async with aiosqlite.connect(DATABASE) as database:
+                async with database.execute(f"Select * FROM eucenje LIMIT {limit} OFFSET {offset}") as cursor:
                     async for row in cursor:
                         response["data"]["usernames"].append(row[1])
                         response["data"]["githubLinks"].append(row[2])
@@ -77,6 +76,7 @@ async def get_data_db(request):
                         response["data"]["content"].append(row[4])
 
                         await database.commit()
+                        print(f"i: {offset}")
 
         return web.json_response(response , status = 200)
     

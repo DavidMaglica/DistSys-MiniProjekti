@@ -53,6 +53,7 @@ async def worker_tokenizer(request):
             ))))
 
             await asyncio.gather(*tasks)
+            await session.close()
 
         return web.json_response({ "service_id": 2, "status": "ok"}, status = 200)
 
