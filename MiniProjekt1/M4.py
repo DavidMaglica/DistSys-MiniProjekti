@@ -14,17 +14,20 @@ routes = web.RouteTableDef()
 global GATHERED_DATA
 GATHERED_DATA = []
 
+async def create_files():
+    for item in GATHERED_DATA:
+        async with aiofiles.open(f"MiniProjekt1/files/{item['filename']}", mode = "w", encoding = "utf-8") as file:
+            await file.write(item["content"])
+
 @routes.post("/gatherData")
 async def gather_data(request):
     req = await request.json()
     GATHERED_DATA.extend(req)
-    print("len:", len(GATHERED_DATA))
     i = 0
-    for _ in GATHERED_DATA:
-        print(GATHERED_DATA[i]["username"])
-        i += 1
+    if (len(GATHERED_DATA) > 10):
+        await create_files()
 
-    return web.json_response({ "status": "ok", "data": req }, status = 200)
+    return web.json_response({ "status": "ok" }, status = 200)
 
 
 app = web.Application()
