@@ -12,7 +12,7 @@ Microservis asinkrono poziva e-ucenje API (M1), te prosljeđuje podatke kao dict
 
 WT microservis uzima dictionary. Uzima samo redove gdje username pocinje na w. Prosljeđuje kod 4. microservisu.
 
-### 4. Četvrti mikroservis
+### 4. Treći mikroservis
 
 WT microservis uzima dictionary. Uzima samo redove gdje username pocinje na d. Prosljeđuje kod 4. microservisu.
 
