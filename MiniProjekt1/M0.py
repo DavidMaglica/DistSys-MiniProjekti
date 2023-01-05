@@ -15,6 +15,7 @@ from aiohttp import web
 import aiofiles
 
 routes = web.RouteTableDef()
+
 global DATABASE
 DATABASE = "MiniProjekt1/db/database.db"
 
@@ -84,7 +85,6 @@ async def get_data_db(request):
         return web.json_response({ "Error": str(e) })
 
 asyncio.run(check_db())
-
 
 app = web.Application()
 

@@ -12,27 +12,27 @@ from aiohttp import web
 
 routes = web.RouteTableDef()
 
-def extract_workers_d(d):
+def extract_workers_d(dict):
     result = []
-    for x, y in enumerate(d["usernames"]):
+    for x, y in enumerate(dict["usernames"]):
         if y[0].lower() == "d":
             result.append({
                 "username": y,
-                "githubLink": d["githubLinks"][x],
-                "filename": d["filenames"][x],
-                "content": d["content"][x]
+                "githubLink": dict["githubLinks"][x],
+                "filename": dict["filenames"][x],
+                "content": dict["content"][x]
             })
     return result
 
-def extract_workers_w(d):
+def extract_workers_w(dict):
     result = []
-    for x, y in enumerate(d["usernames"]):
+    for x, y in enumerate(dict["usernames"]):
         if y[0].lower() == "w":
             result.append({
                 "username": y,
-                "githubLink": d["githubLinks"][x],
-                "filename": d["filenames"][x],
-                "content": d["content"][x]
+                "githubLink": dict["githubLinks"][x],
+                "filename": dict["filenames"][x],
+                "content": dict["content"][x]
             })
     return result
 
@@ -44,13 +44,13 @@ async def worker_tokenizer(request):
         async with aiohttp.ClientSession() as session:
             tasks.append(asyncio.create_task(
                 session.post("http://localhost:4/gatherData",
-                json = extract_workers_w(req["data"]
-            ))))
+                json = extract_workers_w(req["data"])
+            )))
             
             tasks.append(asyncio.create_task(
                 session.post("http://localhost:4/gatherData",
-                json = extract_workers_d(req["data"]
-            ))))
+                json = extract_workers_d(req["data"])
+            )))
 
             await asyncio.gather(*tasks)
             await session.close()

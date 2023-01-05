@@ -6,12 +6,21 @@ kao dictionary Worker tokenizer (WT) microservisu.
 import aiohttp
 import asyncio
 from aiohttp import web
+from git import Repo
+
 
 routes = web.RouteTableDef()
 
 async def get_100(session, offset):
     result = await session.get(f"http://localhost:1/getDataDb?offset={offset}")
+    
     return await result.json()
+
+async def git_clone(url):
+    for i in range(len(url)):
+        item = url[i].split("/")[-1]
+        repo_dir = f"MiniProjekt1/repos/{item}"
+        Repo.clone_from(url[i], repo_dir)
 
 @routes.get("/getData")
 async def get_data(request):
@@ -20,7 +29,9 @@ async def get_data(request):
         async with aiohttp.ClientSession() as session:
             for i in range(0, 10001, 100):
                 worker_tokenizer = await get_100(session, i)
-
+                
+                await git_clone(worker_tokenizer["data"]["githubLinks"])
+    
                 tasks.append(asyncio.create_task(session.post("http://localhost:3/WT", json = worker_tokenizer)))
 
                 response = await asyncio.gather(*tasks)
