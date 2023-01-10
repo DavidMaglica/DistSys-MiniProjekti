@@ -8,7 +8,13 @@ Fake E-ucenje API microservis (M0). Sastoji se od DB i jedne rute koja vraca git
 
 Microservis asinkrono poziva e-ucenje API (M1), te prosljeđuje podatke kao dictionary Worker tokenizer (WT) microservisu.
 
-### 3. Treći mikroservis
+Proširen Fake M1. Nakon što dobije kolekciju URL-ova asinkrono preuzima
+repozitorije sa zadacama. Asinkrono asinkrono cita red po red Python
+datoteke (M1+), te prosljeđuje stringove WTMs.
+
+!!! Za pokretanje M1+ potrebno u terminal upisati: `git config --system core.longpaths true `
+
+3. Treći mikroservis
 
 WT microservis uzima dictionary. Uzima samo redove gdje username pocinje na w. Prosljeđuje kod 4. microservisu.
 
@@ -29,6 +35,10 @@ Microservis sastoji od rute (/gatherData) sprema se Python kod u listu. Ako ima 
 ### 2. Second microservice
 
 This microservice asynchronously calls the "Fake E-ucenje API" microservice and it sends the data as a dictionary to the Worker tokenizer (WT) microservice
+
+Expanded Fake M1. After getting the collection of URL-s, the microservice asynchronously clones the repositories. Asynchronously reads line by line the recieved python files and sends strings to the WTMs.
+
+!!! To run M1+ it's needed to run the following command in the terminal: `git config --system core.longpaths true `
 
 ### 3. Third microservice
 

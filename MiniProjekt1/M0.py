@@ -77,7 +77,8 @@ async def get_data_db(request):
                         response["data"]["content"].append(row[4])
 
                         await database.commit()
-                        print(f"i: {offset}")
+                        
+                    # print(f"limit: {limit} offset: {offset}")
 
         return web.json_response(response , status = 200)
     
@@ -90,4 +91,4 @@ app = web.Application()
 
 app.router.add_routes(routes)
 
-web.run_app(app, port = 1)
+web.run_app(app)
