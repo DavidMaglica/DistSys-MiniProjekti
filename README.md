@@ -1,4 +1,3 @@
-
 # DistSys - MiniProjekti
 
 U ovome repozitoriju nalaze se mini projekti za kolegij Distribuirani sustavi.
