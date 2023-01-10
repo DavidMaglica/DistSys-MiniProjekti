@@ -1,5 +1,4 @@
 # DistSys - MiniProjekti
-
 U ovome repozitoriju nalaze se mini projekti za kolegij Distribuirani sustavi.
 Programi su pisani u Pythonu i svaki mini projekt će imati vlastiti opis na hrvatskom i engleskom jeziku.
 
